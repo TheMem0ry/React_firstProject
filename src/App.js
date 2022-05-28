@@ -9,11 +9,11 @@ import MyInput from "./Components/UI/input/MyInput";
 import PostForm from "./Components/PostForm";
 import MySelect from "./Components/UI/select/MySelect";
 import PostFilter from "./Components/UI/PostFilter";
+import MyModal from "./Components/UI/MyModal/MyModal";
+import {usePosts} from "./hooks/usePosts.js"
 
 function App() {
 
-
-  //Initializing a State for a PostList
   const [posts, setPosts] = useState([
     {id:1, title:'JavaScript', body:'Description'},
     {id:2, title:'React', body:'Description'},
@@ -21,22 +21,13 @@ function App() {
   ])
   
   const [filter, setFilter] = useState({sort:'', query:''})
- 
+  const [modal, setModal] = useState(false)
 
-  const sortedPosts = useMemo(() => {
-    if(filter.sort){
-      return [...posts].sort((a,b)=> a[filter.sort].localeCompare(b[filter.sort]))
-    }
-      return posts;
-  }, [filter.sort, posts]) 
-
-  const sortedAndSearchedPosts = useMemo(() => {
-    return sortedPosts.filter(post => post.title.toLocaleLowerCase().includes(filter.query.toLocaleLowerCase()))
-  }, [filter.query, sortedPosts])
-  
+  const sortedAndSearchedPosts = usePosts(posts,filter.sort, filter.query)
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost])
+    setModal(false)
   }
 
   const removePost = (post) => {
@@ -47,19 +38,25 @@ function App() {
 
   return (
     <div className="App">
+      
+      <MyButton style={{marginTop:'30px'}}
+      onClick={() => setModal(true)}
+      >Create Post</MyButton>
+      <MyModal 
+      visible={modal}
+      setVisible = {setModal}
+      >
       <PostForm create={createPost}/>
-
+      </MyModal>
+      
       <hr style={{margin:'15px 0'}}></hr>
       <PostFilter filter = {filter} 
       setFilter = {setFilter}
       />
-      {sortedAndSearchedPosts.length
-      ? <PostList
+       <PostList
           posts={sortedAndSearchedPosts}
           title='Post List Title'
           remove={removePost}/>
-      : <h1 style={{color:'red', textAlign:'center'}}>There are no posts</h1>}
-      
     </div>
   );
 }
